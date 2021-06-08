@@ -4,7 +4,7 @@ AS
     SELECT [type] AS DataUsageWindow,
     data_processed_mb AS DataProcessedMB,
     CAST(data_processed_mb AS DECIMAL(10,3)) / 1000 AS DataProcessedGB,
-    (CAST(data_processed_mb AS DECIMAL(10,3)) / 1000 / 1000 AS DataProcessedTB
+    (CAST(data_processed_mb AS DECIMAL(10,3)) / 1000) / 1000 AS DataProcessedTB
     FROM sys.dm_external_data_processed
 ),
 DataLimit
