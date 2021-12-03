@@ -5,14 +5,14 @@ These are utility scripts for various operations in Azure Synapse Analytics Serv
 
 ---
 
-##createviewsdynamically.sql 
+## createviewsdynamically.sql 
 Can use source metadata to construct a CREATE VIEW statement dynamically.
 
-##dataprocessed.sql 
+## dataprocessed.sql 
 Shows how much data has been processed vs the daily/weekly/monthly limits set.
 
-##externaltablemetadata.sql 
+## externaltablemetadata.sql 
 Shows the metadata attached to an External Table such as file formats and data source.
 
-##showerrorfiles.sql
+## showerrorfiles.sql
 Creates a view to show errors logged as part of the OPENROWSET ERRORFILE_LOCATION and ERRORFILE_DATA_SOURCE error handling process.
