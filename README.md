@@ -6,10 +6,10 @@ These are utility scripts for various operations in Azure Synapse Analytics Serv
 ---
 
 ## createviewsdynamically.sql 
-Can use source metadata to construct a CREATE VIEW statement dynamically.
+Basic SQL statement which can be used to construct a CREATE VIEW statement dynamically using file metadata extraction from sp_describe_first_result_set.
 <br /><br />
 ## dataprocessed.sql 
-Shows how much data has been processed vs the daily/weekly/monthly limits set.
+Shows the data processed metric vs the daily/weekly/monthly TB (terabytes) limits set.
 <br /><br />
 ## externaltablemetadata.sql 
 Shows the metadata attached to an External Table such as file formats and data source.
