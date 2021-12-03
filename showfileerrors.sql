@@ -6,10 +6,7 @@ SELECT
     [Column],
     ColumnName,
     Value,
-    [File],
-    REVERSE(SUBSTRING(REVERSE([File]),
-            2,
-            CHARINDEX('/',REVERSE([File]))-2)) AS ErrorFileName,
+    [File],   
     rowdata.filepath(1) AS ErrorFolderName
 FROM OPENROWSET(
         BULK '<path_to_your_error_folder>/_rejectedrows/*/error.json',
