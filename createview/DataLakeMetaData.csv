@@ -1,0 +1,7 @@
+FileFormat|HeaderRow|FieldTerminator|ViewName|ExternalDataSourceDataLake|Location|FolderHierarchyDepth|MaxVarcharValue
+Parquet|||LDW.vwCustomer|ExternalDataSourceDataLake|webconformed/cleansed/customer/*/*.parquet|1|255
+Parquet|||LDW.vwProductCategory|ExternalDataSourceDataLake|webconformed/cleansed/productcategory/*/*.parquet|1|255
+Parquet|||LDW.vwProductModel|ExternalDataSourceDataLake|webconformed/cleansed/productmodel/*/*.parquet|1|255
+Parquet|||LDW.vwProducts|ExternalDataSourceDataLake|webconformed/cleansed/products/*/*.parquet|1|255
+Parquet|||LDW.vwFactTelemetry|ExternalDataSourceDataLake|webvisitmessagesoptimised/EventYear=*/EventMonth=*/EventDateTime=*/*.parquet|3|50
+Parquet|||LDW.vwDimDate|ExternalDataSourceDataLake|conformed/dimensions/dimdate/*.parquet|0|50
