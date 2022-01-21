@@ -1,0 +1,2 @@
+--replace [schema.viewname] with a View name to export using CETAS
+EXEC LDW.GeneratePreComputedDatasets 'schema.viewname'
