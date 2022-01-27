@@ -1,2 +1,5 @@
---replace [schema.viewname] with a View name to export using CETAS
-EXEC LDW.GeneratePreComputedDatasets 'schema.viewname'
+EXEC LDW.GeneratePreComputedDatasets
+    @SourceView = 'LDW.vwFactWebTelemetryAggregate',
+    @Location = 'precomputeddatasets/dataminutes2/',
+    @DataSource = 'ExternalDataSourceDataLakeMI',
+    @FileFormat = 'SynapseParquetFormat'
