@@ -1,77 +1,40 @@
-/*
-Attributes available for logging are at https://docs.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
-*/
-CREATE OR ALTER VIEW dbo.vwAnalyseLogs
-AS
-SELECT
-    time,
-    resourceId,
-    category,
-    operationName,
-    operationVersion,
-    schemaVersion,
-    statusCode,
+/**
+this is example usage of the view in sqlcreatequeryviewforstoragelogs
+amend the OPENROWSET values accordingly and also the transformation on the column name such as "EventDate" to suit folder partition schema
+**/
+
+--aggregate by the source EventMonth and show how many unique files were scanned
+SELECT 
     statusText,
-    durationMs,
-    callerIpAddress,
-    correlationId,
-    identity_type,
-    identity_tokenHash,
-    [location],
-    identity_delegatedResource_resourceId,
-    properties_accountName,
-    properties_serviceType,
-    properties_objectKey,
-    properties_metricResponseType,
-    properties_serverLatencyMs,
-    properties_requestHeaderSize,
-    properties_responseHeaderSize,
-    properties_responseBodySize,
-    properties_tlsVersion,
-    uri,
-    protocol,
-    resourceType,
-    jsonrows.filepath(1) as LogYear,
-    jsonrows.filepath(2) as LogMonth,
-    jsonrows.filepath(3) as LogDay,
-    jsonrows.filepath(4) as LogHour,
-    jsonrows.filepath(5) as LogMinute
-FROM OPENROWSET
-    (
-        BULK '/resourceId=/subscriptions/d496ab56-1d7e-4b01-8e69-7747122cb5ef/resourceGroups/dhrgsynapseuk/providers/Microsoft.Storage/storageAccounts/dhstordatalakeuk/blobServices/default/y=*/m=*/d=*/h=*/m=*/*',
-        DATA_SOURCE = 'ExternalDataSourceDataLakeMI',
-        FORMAT = 'CSV',
-        PARSER_VERSION = '2.0',
-        FIELDTERMINATOR = '0x09',
-        FIELDQUOTE = '0x0b',
-        ROWTERMINATOR = '0x0A' 
-    ) WITH (doc NVARCHAR(4000)) AS jsonrows
-    CROSS APPLY OPENJSON (doc)
-        WITH (  time DATETIME2 '$.time',
-                resourceId VARCHAR(500) '$.resourceId',
-                category VARCHAR(50) '$.category',
-                operationName VARCHAR(100) '$.operationName',
-                operationVersion VARCHAR(10) '$.operationVersion',
-                schemaVersion VARCHAR(10) '$.schemaVersion',
-                statusCode SMALLINT '$.statusCode',
-                statusText VARCHAR(100) '$.statusText',
-                durationMs INT '$.durationMs',
-                callerIpAddress VARCHAR(50) '$.callerIpAddress',
-                correlationId VARCHAR(50) '$.correlationId',
-                identity_type VARCHAR(100) '$.identity.type',
-                identity_tokenHash VARCHAR(100) '$.identity.tokenHash',
-                [location] VARCHAR(50) '$.location',
-                identity_delegatedResource_resourceId VARCHAR(500) '$.identity.delegatedResource.resourceId',
-                properties_accountName VARCHAR(50) '$.properties.accountName',
-                properties_serviceType VARCHAR(30) '$.properties.serviceType',
-                properties_objectKey VARCHAR(250) '$.properties.objectKey',
-                properties_metricResponseType VARCHAR(50) '$.properties.metricResponseType',
-                properties_serverLatencyMs INT '$.properties.serverLatencyMs',
-                properties_requestHeaderSize INT '$.properties.requestHeaderSize',
-                properties_responseHeaderSize INT '$.properties.responseHeaderSize',
-                properties_responseBodySize INT '$.properties.responseBodySize',
-                properties_tlsVersion VARCHAR(10) '$.properties.tlsVersion',
-                uri VARCHAR(500) '$.uri',
-                protocol VARCHAR(50) '$.protocol',
-                resourceType VARCHAR(250) '$.resourceType'
-                )
+    CAST(REPLACE(SUBSTRING(uri,PATINDEX('%EventMonth=%',uri)+11,2),'/','') AS TINYINT) AS URIFolderMonth,
+    COUNT(DISTINCT uri) AS FileScanCount
+FROM dbo.vwAnalyseLogs
+WHERE LogYear = 2022
+AND LogMonth = '07'
+AND LogDay = '20'
+AND LogHour = '20'
+AND operationName = 'ReadFile'
+AND identity_delegatedResource_resourceId LIKE '%dhsynapsews%' --synapse workspace
+GROUP BY
+    statusText,
+    CAST(REPLACE(SUBSTRING(uri,PATINDEX('%EventMonth=%',uri)+11,2),'/','') AS TINYINT)
+ORDER BY 2
+
+--aggregate by the source EventMonth and EventDate folder and show how many unique files were scanned
+SELECT 
+    statusText,
+    CAST(REPLACE(SUBSTRING(uri,PATINDEX('%EventMonth=%',uri)+11,2),'/','') AS TINYINT) AS URIFolderMonth,
+    SUBSTRING(uri,PATINDEX('%EventDate=%',uri)+10,10) AS URIFolderDate,
+    COUNT(DISTINCT uri) AS FileScanCount
+FROM dbo.vwAnalyseLogs
+WHERE LogYear = 2022
+AND LogMonth = '07'
+AND LogDay = '21'
+AND LogHour = '12'
+AND operationName = 'ReadFile'
+AND identity_delegatedResource_resourceId LIKE '%dhsynapsews%'
+GROUP BY
+    statusText,
+    CAST(REPLACE(SUBSTRING(uri,PATINDEX('%EventMonth=%',uri)+11,2),'/','') AS TINYINT),
+    SUBSTRING(uri,PATINDEX('%EventDate=%',uri)+10,10)
+ORDER BY 3
