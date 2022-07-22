@@ -1,7 +1,31 @@
-
 /*
 Attributes available for logging are at https://docs.microsoft.com/en-us/azure/storage/blobs/monitor-blob-storage-reference
 */
+
+--create and configure new Serverless SQL Pools database
+CREATE DATABASE LogAnalysis
+
+USE LogAnalysis
+
+--encryption to allow authentication
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'dsfads$%zdsfkjsdhlk456hvwegf';
+
+--ensure Synapse workspace has been added as a Storage Blob Data Reader to general purpose storage account
+CREATE DATABASE SCOPED CREDENTIAL DataLakeManagedIdentity
+WITH IDENTITY='Managed Identity'
+
+--create data source to general purpose storage account
+--replace <storage-account> with relevant value
+CREATE EXTERNAL DATA SOURCE ExternalDataSourceDataLakeMI
+	WITH (
+		LOCATION   = 'https://<storage-account>.blob.core.windows.net/insights-logs-storageread',
+        CREDENTIAL = DataLakeManagedIdentity
+	    );
+
+--enable support for UTF8
+ALTER DATABASE LogAnalysis COLLATE Latin1_General_100_BIN2_UTF8;
+
+--create View over the storage logs
 CREATE OR ALTER VIEW dbo.vwAnalyseLogs
 AS
 SELECT
@@ -32,14 +56,17 @@ SELECT
     uri,
     protocol,
     resourceType,
-    jsonrows.filepath(1) as LogYear,
-    jsonrows.filepath(2) as LogMonth,
-    jsonrows.filepath(3) as LogDay,
-    jsonrows.filepath(4) as LogHour,
-    jsonrows.filepath(5) as LogMinute
+    jsonrows.filepath(1) as SubscriptionID,
+    jsonrows.filepath(2) as ResourceGroup,
+    jsonrows.filepath(3) as StorageAccount,
+    jsonrows.filepath(4) as LogYear,
+    jsonrows.filepath(5) as LogMonth,
+    jsonrows.filepath(6) as LogDay,
+    jsonrows.filepath(7) as LogHour,
+    jsonrows.filepath(8) as LogMinute
 FROM OPENROWSET
     (
-        BULK '/resourceId=/subscriptions/d496ab56-1d7e-4b01-8e69-7747122cb5ef/resourceGroups/dhrgsynapseuk/providers/Microsoft.Storage/storageAccounts/dhstordatalakeuk/blobServices/default/y=*/m=*/d=*/h=*/m=*/*',
+        BULK '/resourceId=/subscriptions/*/resourceGroups/*/providers/Microsoft.Storage/storageAccounts/*/blobServices/default/y=*/m=*/d=*/h=*/m=*/*',
         DATA_SOURCE = 'ExternalDataSourceDataLakeMI',
         FORMAT = 'CSV',
         PARSER_VERSION = '2.0',
